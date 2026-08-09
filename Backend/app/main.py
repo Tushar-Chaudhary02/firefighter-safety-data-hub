@@ -28,13 +28,27 @@ app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 app.include_router(web_api_router, prefix=f"{settings.API_V1_PREFIX}/web_api")
 
 # Optional single-service web hosting mode.
-# Local Docker Compose keeps React in its own Vite container. When WEB_DIST_DIR
-# points to a built React `dist` directory, FastAPI also serves that dashboard so
-# a public demo can use one URL for both the UI and API.
+# Local Docker Compose keeps the frontends in their development workflows. For
+# the public course demo, the same FastAPI service can serve both built UIs:
+#   /             -> React researcher dashboard
+#   /firefighter/ -> Flutter firefighter application
 import os
 from pathlib import Path
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+
+_flutter_web_dist_value = os.getenv("FLUTTER_WEB_DIST_DIR", "").strip()
+if _flutter_web_dist_value:
+    _flutter_web_dist = Path(_flutter_web_dist_value).resolve()
+    _flutter_index = _flutter_web_dist / "index.html"
+    if _flutter_index.is_file():
+        # Flutter is built with --base-href /firefighter/, so mounting the whole
+        # generated directory here preserves its asset URLs.
+        app.mount(
+            "/firefighter",
+            StaticFiles(directory=str(_flutter_web_dist), html=True),
+            name="firefighter-web",
+        )
 
 _web_dist_value = os.getenv("WEB_DIST_DIR", "").strip()
 if _web_dist_value:

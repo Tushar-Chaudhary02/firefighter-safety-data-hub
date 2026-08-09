@@ -21,10 +21,22 @@ class AppConfig {
   static const String baseUrlLoopback = 'http://127.0.0.1:$port';
 
   /// Local-first runtime URL with a dart-define escape hatch.
+  ///
+  /// - Local Flutter Web (localhost) talks to the local FastAPI backend on 8000.
+  /// - A hosted Flutter Web build talks to the API on the same public origin.
+  /// - `API_BASE_URL` can always override either behavior.
   static String get baseUrl {
     final override = configuredBaseUrl.trim().replaceAll(RegExp(r'/$'), '');
     if (override.isNotEmpty) return override;
-    if (kIsWeb) return baseUrlLoopback;
+
+    if (kIsWeb) {
+      final host = Uri.base.host.toLowerCase();
+      if (host == 'localhost' || host == '127.0.0.1') {
+        return baseUrlLoopback;
+      }
+      return Uri.base.origin;
+    }
+
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return baseUrlAndroidEmulator;

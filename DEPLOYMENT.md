@@ -1,5 +1,15 @@
 # Public Demo Deployment
 
+## Deployed demo
+
+**Public URL:** <https://firefighter-safety-data-hub-demo.onrender.com>
+
+Useful endpoints:
+
+- Researcher dashboard: <https://firefighter-safety-data-hub-demo.onrender.com/>
+- Backend health: <https://firefighter-safety-data-hub-demo.onrender.com/api/v1/health>
+- FastAPI documentation: <https://firefighter-safety-data-hub-demo.onrender.com/docs>
+
 The normal evaluator workflow remains local and uses `compose.yaml`. This file describes the optional **public course demo** deployment.
 
 ## Recommended host: Render
@@ -43,3 +53,20 @@ These are demonstration-only credentials for synthetic data and are not used by 
 The public demo is for course evaluation, not production use. The free web-service filesystem is ephemeral, so records created by visitors can disappear when the service restarts. The included startup seed recreates the demonstration records after a restart.
 
 The local evaluator package does not have this limitation because `docker compose` stores application data in the `local_app_data` Docker volume.
+
+## Flutter Web interface
+
+The public Render service also serves the Flutter firefighter application from the same origin:
+
+- Firefighter app: `https://firefighter-safety-data-hub-demo.onrender.com/firefighter/`
+- Researcher dashboard: `https://firefighter-safety-data-hub-demo.onrender.com/`
+- API docs: `https://firefighter-safety-data-hub-demo.onrender.com/docs`
+
+The Render Docker build runs `flutter build web --release --base-href /firefighter/`. The Flutter app automatically uses the same public origin for API requests when hosted, while `flutter run -d chrome` continues to use the local backend at `http://127.0.0.1:8000`.
+
+Demo firefighter credentials:
+
+```text
+demo.firefighter1@example.com
+DemoFirefighter123!
+```

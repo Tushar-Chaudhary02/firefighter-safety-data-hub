@@ -1,7 +1,10 @@
-# Public course-demo image: builds the React dashboard and serves it from the
-# FastAPI backend. This does not replace the normal local compose.yaml workflow.
+# Public course-demo image.
+# It builds both browser interfaces and serves them from the FastAPI backend:
+#   /             -> React researcher dashboard
+#   /firefighter/ -> Flutter firefighter app
+# This does not replace the normal local compose.yaml + flutter run workflow.
 
-FROM node:22-alpine AS web-build
+FROM node:22-alpine AS researcher-web-build
 WORKDIR /web
 COPY Frontend/web_app/fire-fighter-data-exposure-hub/package.json ./
 COPY Frontend/web_app/fire-fighter-data-exposure-hub/package-lock.json ./
@@ -11,6 +14,24 @@ ENV VITE_APP_NAME="Firefighter Safety Data Hub"
 ENV VITE_API_BASE_URL="/api/v1/web_api"
 RUN npm run build
 
+# Use Flutter's official stable source branch for a reproducible Linux web build
+# without depending on a third-party Flutter container image.
+FROM debian:bookworm-slim AS firefighter-web-build
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       ca-certificates curl git unzip xz-utils zip libglu1-mesa \
+    && rm -rf /var/lib/apt/lists/*
+RUN git clone --depth 1 --branch stable https://github.com/flutter/flutter.git /opt/flutter
+ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:${PATH}"
+RUN flutter config --enable-web && flutter precache --web
+WORKDIR /flutter
+COPY Frontend/mobile_app/firefighter_safety_data_hub/pubspec.yaml ./
+COPY Frontend/mobile_app/firefighter_safety_data_hub/pubspec.lock ./
+RUN flutter pub get
+COPY Frontend/mobile_app/firefighter_safety_data_hub/ ./
+RUN flutter build web --release --base-href /firefighter/
+
 FROM python:3.11-slim AS runtime
 WORKDIR /app/Backend
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -18,8 +39,10 @@ ENV PYTHONUNBUFFERED=1
 COPY Backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 COPY Backend/ ./
-COPY --from=web-build /web/dist /app/web_dist
+COPY --from=researcher-web-build /web/dist /app/web_dist
+COPY --from=firefighter-web-build /flutter/build/web /app/flutter_web_dist
 ENV WEB_DIST_DIR=/app/web_dist
+ENV FLUTTER_WEB_DIST_DIR=/app/flutter_web_dist
 ENV APP_ENV=demo
 ENV DATABASE_URL=sqlite:////tmp/firefighter_demo.db
 ENV EMAIL_BACKEND=console

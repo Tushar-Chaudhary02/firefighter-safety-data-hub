@@ -10,6 +10,12 @@ from datetime import datetime, timezone
 
 from app.core.security import hash_password
 from app.db.session import SessionLocal
+# Import the complete SQLAlchemy model registry before the first query.
+# UserModel contains string-based relationships (for example, "LocationEntry"),
+# and standalone scripts do not automatically import every API router/model the
+# way the FastAPI application does. Registering all mapped classes here prevents
+# SQLAlchemy mapper-resolution errors during demo seeding.
+from app.db import base_class  # noqa: F401
 from app.models.LogEventModel import LogEventModel
 from app.models.PpeModel import PpeModel
 from app.models.SmokeSamplerModel import SmokeSamplerSampleModel, SmokeSamplerSubmissionModel

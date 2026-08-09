@@ -25,6 +25,8 @@ Password: DemoFirefighter123!
 Email: demo.researcher@example.com
 Password: DemoResearch123!
 ```
+**Note: I am using Render's Free instance, it will automatically spin down after about 15 minutes without traffic and wake back up when someone visits the URL. The first visit after sleeping can therefore take around a minute.**
+
 ---
 
 ## 1. Project Purpose

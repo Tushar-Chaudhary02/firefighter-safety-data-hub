@@ -1,0 +1,30 @@
+# Public course-demo image: builds the React dashboard and serves it from the
+# FastAPI backend. This does not replace the normal local compose.yaml workflow.
+
+FROM node:22-alpine AS web-build
+WORKDIR /web
+COPY Frontend/web_app/fire-fighter-data-exposure-hub/package.json ./
+COPY Frontend/web_app/fire-fighter-data-exposure-hub/package-lock.json ./
+RUN npm ci
+COPY Frontend/web_app/fire-fighter-data-exposure-hub/ ./
+ENV VITE_APP_NAME="Firefighter Safety Data Hub"
+ENV VITE_API_BASE_URL="/api/v1/web_api"
+RUN npm run build
+
+FROM python:3.11-slim AS runtime
+WORKDIR /app/Backend
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+COPY Backend/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+COPY Backend/ ./
+COPY --from=web-build /web/dist /app/web_dist
+ENV WEB_DIST_DIR=/app/web_dist
+ENV APP_ENV=demo
+ENV DATABASE_URL=sqlite:////tmp/firefighter_demo.db
+ENV EMAIL_BACKEND=console
+ENV FILE_STORAGE_BACKEND=local
+ENV LOCAL_UPLOAD_DIR=/tmp/firefighter_uploads
+ENV CORS_ORIGINS="*"
+ENV DEMO_SEED=true
+CMD ["sh", "-c", "alembic upgrade head && python -m app.scripts.seed_demo && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]

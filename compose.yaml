@@ -1,0 +1,49 @@
+name: firefighter-safety-data-hub
+
+services:
+  backend:
+    build:
+      context: ./Backend
+    command: >-
+      sh -c "alembic upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    environment:
+      APP_ENV: local
+      DATABASE_URL: sqlite:////data/firefighter_local.db
+      SECRET_KEY: local-development-secret-change-for-production
+      EMAIL_TOKEN_SECRET: local-development-email-secret
+      EMAIL_BACKEND: console
+      FILE_STORAGE_BACKEND: local
+      LOCAL_UPLOAD_DIR: /data/uploads
+      SES_FROM_EMAIL: noreply@localhost
+      CORS_ORIGINS: "*"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')"
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    ports:
+      - "8000:8000"
+    volumes:
+      - local_app_data:/data
+
+  web:
+    build:
+      context: ./Frontend/web_app/fire-fighter-data-exposure-hub
+    environment:
+      API_PROXY_TARGET: http://backend:8000
+      VITE_APP_NAME: Firefighter Safety Data Hub
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "5173:5173"
+
+volumes:
+  local_app_data:
+

@@ -1,0 +1,42 @@
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Secrets / local configuration
+.env
+.env.*
+!.env.example
+**/android/key.properties
+**/android/local.properties
+**/*.jks
+**/*.keystore
+
+# Python
+**/.venv/
+**/venv/
+**/__pycache__/
+**/*.py[cod]
+
+# Flutter / Dart
+**/.dart_tool/
+**/.flutter-plugins-dependencies
+**/build/
+**/coverage/
+**/android/.gradle/
+**/ios/Flutter/ephemeral/
+**/macos/Flutter/ephemeral/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+
+# Node / Vite
+**/node_modules/
+**/dist/
+**/*.log
+
+# Runtime uploads
+Backend/local_uploads/
+
+# Public demo/runtime scratch data
+firefighter_demo.db
+*_demo.db

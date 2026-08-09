@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: firefighter-safety-data-hub-demo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.render
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: EMAIL_TOKEN_SECRET
+        generateValue: true
+      - key: DEMO_SEED
+        value: "true"
+      - key: DEMO_RESEARCHER_EMAIL
+        value: demo.researcher@example.com
+      - key: DEMO_RESEARCHER_PASSWORD
+        value: DemoResearch123!

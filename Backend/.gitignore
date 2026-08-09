@@ -1,0 +1,12 @@
+# Virtual environment
+.venv/
+venv/
+.env
+firefighter_local.db
+local_uploads/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc

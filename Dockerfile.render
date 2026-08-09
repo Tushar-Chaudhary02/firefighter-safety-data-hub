@@ -14,22 +14,28 @@ ENV VITE_APP_NAME="Firefighter Safety Data Hub"
 ENV VITE_API_BASE_URL="/api/v1/web_api"
 RUN npm run build
 
-# Use Flutter's official stable source branch for a reproducible Linux web build
-# without depending on a third-party Flutter container image.
+# Build Flutter Web from the official Flutter source tree.
+# Run Flutter as an unprivileged user because some CI/container filesystems
+# cannot apply archive owner IDs while Flutter downloads build artifacts.
 FROM debian:bookworm-slim AS firefighter-web-build
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        ca-certificates curl git unzip xz-utils zip libglu1-mesa \
     && rm -rf /var/lib/apt/lists/*
-RUN git clone --depth 1 --branch stable https://github.com/flutter/flutter.git /opt/flutter
+RUN useradd --create-home --uid 10001 flutterbuilder \
+    && mkdir -p /opt/flutter /flutter \
+    && chown -R flutterbuilder:flutterbuilder /opt/flutter /flutter
+USER flutterbuilder
+ENV HOME=/home/flutterbuilder
 ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:${PATH}"
-RUN flutter config --enable-web && flutter precache --web
+ENV FLUTTER_SUPPRESS_ANALYTICS=true
+RUN git clone --depth 1 --branch stable https://github.com/flutter/flutter.git /opt/flutter
 WORKDIR /flutter
-COPY Frontend/mobile_app/firefighter_safety_data_hub/pubspec.yaml ./
-COPY Frontend/mobile_app/firefighter_safety_data_hub/pubspec.lock ./
+COPY --chown=flutterbuilder:flutterbuilder Frontend/mobile_app/firefighter_safety_data_hub/pubspec.yaml ./
+COPY --chown=flutterbuilder:flutterbuilder Frontend/mobile_app/firefighter_safety_data_hub/pubspec.lock ./
 RUN flutter pub get
-COPY Frontend/mobile_app/firefighter_safety_data_hub/ ./
+COPY --chown=flutterbuilder:flutterbuilder Frontend/mobile_app/firefighter_safety_data_hub/ ./
 RUN flutter build web --release --base-href /firefighter/
 
 FROM python:3.11-slim AS runtime

@@ -7,7 +7,6 @@
 **/.dart_tool/
 **/build/
 **/node_modules/
-Frontend/mobile_app/
 Documents/
 Backend/firefighter_local.db
 *.zip

@@ -4,8 +4,27 @@ A full-stack application for collecting, organizing, and reviewing firefighter e
 
 The project provides a **Flutter application for firefighter data entry**, a **FastAPI backend**, and a **React researcher dashboard**. The submission version is designed to run locally with minimal setup using **Docker Compose, SQLite, and local storage**. No AWS account or cloud credentials are required.
 
-> **Public demo URL:** To be added before final submission.
+## Public Demo
 
+The hosted demo exposes **both application interfaces from the same Render service**:
+
+- **Flutter firefighter app:** <https://firefighter-safety-data-hub-demo.onrender.com/firefighter/>
+- **React researcher dashboard:** <https://firefighter-safety-data-hub-demo.onrender.com/>
+- **FastAPI documentation:** <https://firefighter-safety-data-hub-demo.onrender.com/docs>
+
+**Demo firefighter account:**
+
+```text
+Email: demo.firefighter1@example.com
+Password: DemoFirefighter123!
+```
+
+**Demo researcher account:**
+
+```text
+Email: demo.researcher@example.com
+Password: DemoResearch123!
+```
 ---
 
 ## 1. Project Purpose
